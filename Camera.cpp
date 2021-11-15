@@ -52,9 +52,7 @@ void Camera::update(float deltaT)
 
     bool orientationChanged = false;
 
-    // the right mouse button needs to be pressed for freelook to work
-    //if (mouse->isButtonDown(MOUSE_BUTTON_RIGHT)) {
-
+    ////////////////////////////////////////////////MOVING CAMERA WITH CURSOR
 	int dx = mouse->getDeltaX();
 	int dy = mouse->getDeltaY();
 
@@ -68,20 +66,7 @@ void Camera::update(float deltaT)
 		dx = 0;
     }
 
-    //if (mouse->isButtonDown(MOUSE_BUTTON_LEFT)) {
-    //}
-
-    // scroll wheel controls FOV
-    int wd = mouse->getWheelDelta();
-    if (wd > 0) {
-        mFOV -= wd * 10.0f;
-        if (mFOV < 20)
-            mFOV = 20;
-    } else if (wd < 0) {
-        mFOV += wd * 10.0f;
-        if (mFOV > 180)
-            mFOV = 180;
-    }
+    dx = 0;
 
     // recompute forward, right, and up vectors if needed
     if (mOrientationChanged) {
@@ -96,7 +81,7 @@ void Camera::update(float deltaT)
         float cosPitch = std::cos(radPitch);
 
 	    mForward.x = -sinYaw * cosPitch;
-        mForward.y = sinPitch;
+        mForward.y = 0;
 	    mForward.z = -cosYaw * cosPitch;
         mForward = glm::normalize(mForward);
 
@@ -126,12 +111,6 @@ void Camera::update(float deltaT)
         localMoveVec.x -= 1;
     if (kb->isKeyDown(KC_D))
         localMoveVec.x += 1;
-
-    // move up and down
-    if (kb->isKeyDown(KC_E))
-        localMoveVec.y += 1;
-    if (kb->isKeyDown(KC_C))
-        localMoveVec.y -= 1;
 
     float localMoveLen = glm::length(localMoveVec);
 
