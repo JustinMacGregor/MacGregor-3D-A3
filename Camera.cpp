@@ -56,17 +56,17 @@ void Camera::update(float deltaT)
 	int dx = mouse->getDeltaX();
 	int dy = mouse->getDeltaY();
 
-    if (dx != 0) {
-		yaw(-dx * mMouseSpeed);
-		dx = 0;
-    }
+    if (mouse->isButtonDown(MOUSE_BUTTON_RIGHT)) {
+		if (dx != 0) {
+			yaw(-dx * mMouseSpeed);
+			dx = 0;
+		}
 
-	if (dy != 0) {
-		pitch(-dy * mMouseSpeed);
-		dx = 0;
+		if (dy != 0) {
+			pitch(-dy * mMouseSpeed);
+			dx = 0;
+		}
     }
-
-    dx = 0;
 
     // recompute forward, right, and up vectors if needed
     if (mOrientationChanged) {

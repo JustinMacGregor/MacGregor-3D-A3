@@ -474,14 +474,14 @@ bool BasicSceneRenderer::update(float dt)
     // rotate the entity
     float rotSpeed = 90;
     float rotAmount = rotSpeed * dt;
-    if (kb->isKeyDown(KC_LEFT))
-        activeEntity->rotate(rotAmount, 0, 1, 0);
-    if (kb->isKeyDown(KC_RIGHT))
-        activeEntity->rotate(-rotAmount, 0, 1, 0);
-    if (kb->isKeyDown(KC_UP))
-        activeEntity->rotate(rotAmount, 1, 0, 0);
-    if (kb->isKeyDown(KC_DOWN))
-        activeEntity->rotate(-rotAmount, 1, 0, 0);
+    //if (kb->isKeyDown(KC_LEFT))
+    //    activeEntity->rotate(rotAmount, 0, 1, 0);
+    //if (kb->isKeyDown(KC_RIGHT))
+    //    activeEntity->rotate(-rotAmount, 0, 1, 0);
+    //if (kb->isKeyDown(KC_UP))
+    //    activeEntity->rotate(rotAmount, 1, 0, 0);
+    //if (kb->isKeyDown(KC_DOWN))
+    //    activeEntity->rotate(-rotAmount, 1, 0, 0);
 
     // reset entity orientation
     if (kb->keyPressed(KC_R))
