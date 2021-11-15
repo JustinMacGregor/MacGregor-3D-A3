@@ -3,5 +3,5 @@
 int main()
 {
     BasicSceneRenderer app;
-    GLShell::Run(app, "Basic Scene Renderer", 800, 600);
+    GLShell::Run(app, "Basic Scene Renderer", 1200, 600);
 }
