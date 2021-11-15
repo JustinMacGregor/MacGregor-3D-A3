@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include <iostream>
 
 Camera::Camera(GLApp* app)
     : mApp(app)
@@ -124,7 +125,7 @@ void Camera::update(float deltaT)
         // normalize and scale the local move vector
         localMoveVec *= speed * deltaT / localMoveLen;
 
-        // apply translation in world space (relative to camera orientation)
-        mPosition += localMoveVec.z * mForward + localMoveVec.x * mRight + localMoveVec.y * mUp;
+		// apply translation in world space (relative to camera orientation)
+		mPosition += localMoveVec.z * mForward + localMoveVec.x * mRight + localMoveVec.y * mUp;
     }
 }

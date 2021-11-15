@@ -31,6 +31,10 @@ public:
     void setPosition(float x, float y, float z)
     { mPosition = glm::vec3(x, y, z); }
 
+    glm::vec3 getPosition() {
+        return mPosition;
+    }
+
     void lookAt(const glm::vec3& target);
 
     void lookAt(float x, float y, float z)

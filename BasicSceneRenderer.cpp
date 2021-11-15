@@ -32,20 +32,14 @@ void BasicSceneRenderer::initialize()
     glEnable(GL_CULL_FACE);
 
     // enable blending (needed for textures with alpha channel)
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     mPrograms.resize(NUM_LIGHTING_MODELS);
-
     mPrograms[PER_VERTEX_DIR_LIGHT] = new ShaderProgram("shaders/PerVertexDirLight-vs.glsl",
                                                                 "shaders/PerVertexDirLight-fs.glsl");
-    
     mPrograms[BLINN_PHONG_PER_FRAGMENT_DIR_LIGHT] = new ShaderProgram("shaders/BlinnPhongPerFragment-vs.glsl",
                                                                       "shaders/BlinnPhongPerFragmentDirLight-fs.glsl");
-
     mPrograms[BLINN_PHONG_PER_FRAGMENT_POINT_LIGHT] = new ShaderProgram("shaders/BlinnPhongPerFragment-vs.glsl",
                                                                         "shaders/BlinnPhongPerFragmentPointLight-fs.glsl");
-
     mPrograms[BLINN_PHONG_PER_FRAGMENT_MULTI_LIGHT] = new ShaderProgram("shaders/BlinnPhongPerFragment-vs.glsl",
                                                                         "shaders/BlinnPhongPerFragmentMultiLight-fs.glsl");
 
@@ -57,7 +51,7 @@ void BasicSceneRenderer::initialize()
     mMeshes.push_back(CreateChunkyTexturedCylinder(0.5f, 1, 8));
     mMeshes.push_back(CreateSmoothTexturedCylinder(0.5f, 1, 15));
 
-    float roomWidth = 32;
+    float roomWidth = 140;
     float roomHeight = 24;
     float roomDepth = 52;
     float roomTilesPerUnit = 0.25f;
@@ -122,7 +116,7 @@ void BasicSceneRenderer::initialize()
     mMaterials[7]->shininess = 16;
 
     //
-    // Create Entitie
+    // Create Entities
     //
 
     unsigned numRows = mMaterials.size();
@@ -145,13 +139,13 @@ void BasicSceneRenderer::initialize()
     //
 
     // back wall
-    mEntities.push_back(new Entity(fbMesh, mMaterials[1], Transform(0, 0, -0.5f * roomDepth)));
-    // front wall
-    mEntities.push_back(new Entity(fbMesh, mMaterials[1], Transform(0, 0, 0.5f * roomDepth, glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)))));
-    // left wall
-    mEntities.push_back(new Entity(lrMesh, mMaterials[1], Transform(-0.5f * roomWidth, 0, 0, glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)))));
-    // right wall
-    mEntities.push_back(new Entity(lrMesh, mMaterials[1], Transform(0.5f * roomWidth, 0, 0, glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)))));
+    //mEntities.push_back(new Entity(fbMesh, mMaterials[1], Transform(0, 0, -0.5f * roomDepth)));
+    //// front wall
+    //mEntities.push_back(new Entity(fbMesh, mMaterials[1], Transform(0, 0, 0.5f * roomDepth, glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)))));
+    //// left wall
+    //mEntities.push_back(new Entity(lrMesh, mMaterials[1], Transform(-0.5f * roomWidth, 0, 0, glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)))));
+    //// right wall
+    //mEntities.push_back(new Entity(lrMesh, mMaterials[1], Transform(0.5f * roomWidth, 0, 0, glm::angleAxis(glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)))));
     // floor
     mEntities.push_back(new Entity(cfMesh, mMaterials[0], Transform(0, -0.5f * roomHeight, 0, glm::angleAxis(glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)))));
     // ceiling
@@ -162,7 +156,7 @@ void BasicSceneRenderer::initialize()
     //
 
     mCamera = new Camera(this);
-    mCamera->setPosition(12, 8, 22);
+    mCamera->setPosition(66, -10, 2);
     mCamera->lookAt(0, 0, 7);
     mCamera->setSpeed(2);
 
