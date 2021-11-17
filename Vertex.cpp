@@ -7,7 +7,7 @@
 const VertexFormat VertexPosition::Format(
         VertexAttrib(VA_POSITION, 3, GL_FLOAT, 3 * sizeof(GLfloat), 0)
     );
-
+//
 const VertexFormat VertexPositionColor::Format(
         VertexAttrib(VA_POSITION, 3, GL_FLOAT, 7 * sizeof(GLfloat), 0),
         VertexAttrib(VA_COLOR,    4, GL_FLOAT, 7 * sizeof(GLfloat), 3 * sizeof(GLfloat))
