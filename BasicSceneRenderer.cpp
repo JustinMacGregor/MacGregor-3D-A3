@@ -1,7 +1,10 @@
 #include "BasicSceneRenderer.h"
 #include "Image.h"
 #include "Prefabs.h"
+#include "glm/gtx/string_cast.hpp"
 #include <iostream>
+
+int move_direction = 1;
 
 BasicSceneRenderer::BasicSceneRenderer()
     : mLightingModel(PER_VERTEX_DIR_LIGHT)
@@ -55,6 +58,7 @@ void BasicSceneRenderer::initialize()
     float roomHeight = 24;
     float roomDepth = 52;
     float roomTilesPerUnit = 0.25f;
+
 
     // front and back walls
     Mesh* fbMesh = CreateTexturedQuad(roomWidth, roomHeight, roomWidth * roomTilesPerUnit, roomHeight * roomTilesPerUnit);
@@ -446,53 +450,22 @@ bool BasicSceneRenderer::update(float dt)
     if (kb->keyPressed(KC_ESCAPE))
         return false;
 
-    // move forward through our list of entities
-    if (kb->keyPressed(KC_X)) {
-        // compute next entity index
-        ++mActiveEntityIndex;
-        if (mActiveEntityIndex >= (int)mEntities.size())
-            mActiveEntityIndex = 0;
-    }
-
-    // move backward through our list of entities
-    if (kb->keyPressed(KC_Z)) {
-        // compute previous entity index
-        --mActiveEntityIndex;
-        if (mActiveEntityIndex < 0)
-            mActiveEntityIndex = (int)mEntities.size() - 1;
-    }
-
     // get the entity to manipulate
     Entity* activeEntity = mEntities[mActiveEntityIndex];
 
-    // rotate the entity
-    float rotSpeed = 90;
-    float rotAmount = rotSpeed * dt;
-    //if (kb->isKeyDown(KC_LEFT))
-    //    activeEntity->rotate(rotAmount, 0, 1, 0);
-    //if (kb->isKeyDown(KC_RIGHT))
-    //    activeEntity->rotate(-rotAmount, 0, 1, 0);
-    //if (kb->isKeyDown(KC_UP))
-    //    activeEntity->rotate(rotAmount, 1, 0, 0);
-    //if (kb->isKeyDown(KC_DOWN))
-    //    activeEntity->rotate(-rotAmount, 1, 0, 0);
 
-    // reset entity orientation
-    if (kb->keyPressed(KC_R))
-        activeEntity->setOrientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
 
-    float speed = 3;
+    float speed = 15;
     float disp = speed * dt;
 
-    // move entity along world axes
-    if (kb->isKeyDown(KC_I))
+    if (move_direction == 1)
         activeEntity->translate(0, 0, disp);
-    if (kb->isKeyDown(KC_K))
+    else
         activeEntity->translate(0, 0, -disp);
-    if (kb->isKeyDown(KC_L))
-        activeEntity->translate(disp, 0, 0);
-    if (kb->isKeyDown(KC_J))
-        activeEntity->translate(-disp, 0, 0);
+
+    if (ceil(activeEntity->getPosition().z) == 25.00 || ceil(activeEntity->getPosition().z) == -25.00)
+        move_direction = move_direction * -1;
+
 
     // move entity along entity's local axes
     if (kb->isKeyDown(KC_T))
