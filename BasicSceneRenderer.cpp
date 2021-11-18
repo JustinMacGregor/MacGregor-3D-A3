@@ -5,6 +5,7 @@
 #include <iostream>
 
 int move_direction = 1;
+int game_state = 0;
 
 BasicSceneRenderer::BasicSceneRenderer()
     : mLightingModel(PER_VERTEX_DIR_LIGHT)
@@ -219,6 +220,7 @@ void BasicSceneRenderer::resize(int width, int height)
 
 void BasicSceneRenderer::draw()
 {
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // activate current program
@@ -234,187 +236,62 @@ void BasicSceneRenderer::draw()
     // get the view matrix from the camera
     glm::mat4 viewMatrix = mCamera->getViewMatrix();
 
-    //
-    // light setup depends on lighting model
-    //
+    // direction to light
+    glm::vec4 lightDir = glm::normalize(glm::vec4(1, 3, 2, 0));
 
-    if (mLightingModel == PER_VERTEX_DIR_LIGHT) {
+    // send light direction in eye space
+    prog->sendUniform("u_LightDir", glm::vec3(viewMatrix * lightDir));
 
-        //----------------------------------------------------------------------------------//
-        //                                                                                  //
-        // Basic directional light (no ambient, specular, or emissive contributions)        //
-        //                                                                                  //
-        //----------------------------------------------------------------------------------//
+    // send light color/intensity
+    prog->sendUniform("u_LightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
-        // direction to light
-        glm::vec4 lightDir = glm::normalize(glm::vec4(1, 3, 2, 0));
+    if (game_state == 0) {
 
-        // send light direction in eye space
-        prog->sendUniform("u_LightDir", glm::vec3(viewMatrix * lightDir));
-
-        // send light color/intensity
-        prog->sendUniform("u_LightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-
-    } else if (mLightingModel == BLINN_PHONG_PER_FRAGMENT_DIR_LIGHT) {
-
-        //----------------------------------------------------------------------------------//
-        //                                                                                  //
-        // Directional light with ambient, specular, and emissive contributions             //
-        //                                                                                  //
-        //----------------------------------------------------------------------------------//
-
-        prog->sendUniform("u_AmbientLightColor", glm::vec3(0.2f, 0.2f, 0.2f));
-
-        // direction to light
-        glm::vec4 lightDir = glm::normalize(glm::vec4(1, 3, 2, 0));
-
-        // send light direction in eye space
-        prog->sendUniform("u_LightDir", glm::vec3(viewMatrix * lightDir));
-
-        // send light color/intensity
-        prog->sendUniform("u_LightColor", glm::vec3(0.8f, 0.8f, 0.8f));
-
-    } else if (mLightingModel == BLINN_PHONG_PER_FRAGMENT_POINT_LIGHT) {
-
-        //----------------------------------------------------------------------------------//
-        //                                                                                  //
-        // Point light with ambient, specular, and emissive contributions, and attenuation  //
-        //                                                                                  //
-        //----------------------------------------------------------------------------------//
-
-        prog->sendUniform("u_AmbientLightColor", glm::vec3(0.1f, 0.1f, 0.1f));
-
-        // point light position
-        glm::vec3 lightPos = glm::vec3(0, 7, 0);
-        glm::vec3 lightColor = glm::vec3(1.0f, 0.9f, 0.8f);
-
-        // send light position in eye space
-        prog->sendUniform("u_LightPos", glm::vec3(viewMatrix * glm::vec4(lightPos, 1)));
-
-        // send light color/intensity
-        prog->sendUniform("u_LightColor", lightColor);
-
-        prog->sendUniform("u_AttQuat", 0.005f);
-        prog->sendUniform("u_AttLin", 0.05f);
-        prog->sendUniform("u_AttConst", 1.0f);
-
-        // render the light as an emissive cube, if desired
-        if (mVisualizePointLights) {
-            const Mesh* lightMesh = mMeshes[0];
-            lightMesh->activate();
-            glBindTexture(GL_TEXTURE_2D, mTextures[7]->id());  // use black texture
-            prog->sendUniform("u_MatEmissiveColor", lightColor);
-            prog->sendUniform("u_ModelviewMatrix", glm::translate(viewMatrix, glm::vec3(lightPos)));
-            prog->sendUniform("u_NormalMatrix", glm::mat3(1.0f));
-            lightMesh->draw();
-        }
-
-    } else if (mLightingModel == BLINN_PHONG_PER_FRAGMENT_MULTI_LIGHT) {
-
-        //----------------------------------------------------------------------------------//
-        //                                                                                  //
-        // Multiple directional/point lights                                                //
-        //                                                                                  //
-        //----------------------------------------------------------------------------------//
-
-        prog->sendUniform("u_AmbientLightColor", glm::vec3(0.1f, 0.1f, 0.1f));
-
-        prog->sendUniformInt("u_NumDirLights", 1);
-        prog->sendUniformInt("u_NumPointLights", 3);
-
-        // directional light
-        glm::vec4 lightDir = glm::normalize(glm::vec4(1, 3, 2, 0));
-        prog->sendUniform("u_DirLights[0].dir", glm::vec3(viewMatrix * lightDir));
-        prog->sendUniform("u_DirLights[0].color", glm::vec3(0.3f, 0.3f, 0.3f));
-
-        // point light
-        glm::vec3 lightPos1 = glm::vec3(-7, 5, -12);
-        glm::vec3 lightColor1 = glm::vec3(1.0f, 0.0f, 0.0f);
-        prog->sendUniform("u_PointLights[0].pos", glm::vec3(viewMatrix * glm::vec4(lightPos1, 1)));
-        prog->sendUniform("u_PointLights[0].color", lightColor1);
-        prog->sendUniform("u_PointLights[0].attQuat", 0.01f);
-        prog->sendUniform("u_PointLights[0].attLin", 0.1f);
-        prog->sendUniform("u_PointLights[0].attConst", 1.0f);
-
-        // point light
-        glm::vec3 lightPos2 = glm::vec3(7, 5, -12);
-        glm::vec3 lightColor2 = glm::vec3(0.0f, 0.0f, 1.0f);
-        prog->sendUniform("u_PointLights[1].pos", glm::vec3(viewMatrix * glm::vec4(lightPos2, 1)));
-        prog->sendUniform("u_PointLights[1].color", lightColor2);
-        prog->sendUniform("u_PointLights[1].attQuat", 0.01f);
-        prog->sendUniform("u_PointLights[1].attLin", 0.1f);
-        prog->sendUniform("u_PointLights[1].attConst", 1.0f);
-
-        // point light
-        glm::vec3 lightPos3 = glm::vec3(-7, -5, 15);
-        glm::vec3 lightColor3 = glm::vec3(0.0f, 1.0f, 0.0f);
-        prog->sendUniform("u_PointLights[2].pos", glm::vec3(viewMatrix * glm::vec4(lightPos3, 1)));
-        prog->sendUniform("u_PointLights[2].color", lightColor3);
-        prog->sendUniform("u_PointLights[2].attQuat", 0.01f);
-        prog->sendUniform("u_PointLights[2].attLin", 0.1f);
-        prog->sendUniform("u_PointLights[2].attConst", 1.0f);
-
-        // render the point lights as emissive cubes, if desirable
-        if (mVisualizePointLights) {
-            glBindTexture(GL_TEXTURE_2D, mTextures[7]->id());  // use black texture
-            prog->sendUniform("u_NormalMatrix", glm::mat3(1.0f));
-            const Mesh* lightMesh = mMeshes[0];
-            lightMesh->activate();
-            prog->sendUniform("u_MatEmissiveColor", lightColor1);
-            prog->sendUniform("u_ModelviewMatrix", glm::translate(viewMatrix, glm::vec3(lightPos1)));
-            lightMesh->draw();
-            prog->sendUniform("u_MatEmissiveColor", lightColor2);
-            prog->sendUniform("u_ModelviewMatrix", glm::translate(viewMatrix, glm::vec3(lightPos2)));
-            lightMesh->draw();
-            prog->sendUniform("u_MatEmissiveColor", lightColor3);
-            prog->sendUniform("u_ModelviewMatrix", glm::translate(viewMatrix, glm::vec3(lightPos3)));
-            lightMesh->draw();
-        }
     }
+    else {
+        for (unsigned i = 0; i < mEntities.size(); i++) {
 
-    // render all entities
-    for (unsigned i = 0; i < mEntities.size(); i++) {
+            Entity* ent = mEntities[i];
 
-        Entity* ent = mEntities[i];
+            // use the entity's material
+            const Material* mat = ent->getMaterial();
+            glBindTexture(GL_TEXTURE_2D, mat->tex->id());   // bind texture
+            prog->sendUniform("u_Tint", mat->tint);     // send tint color
 
-        // use the entity's material
-        const Material* mat = ent->getMaterial();
-        glBindTexture(GL_TEXTURE_2D, mat->tex->id());   // bind texture
-        prog->sendUniform("u_Tint", mat->tint);     // send tint color
+            // send the Blinn-Phong parameters, if required
+            if (mLightingModel > PER_VERTEX_DIR_LIGHT) {
+                prog->sendUniform("u_MatEmissiveColor", mat->emissive);
+                prog->sendUniform("u_MatSpecularColor", mat->specular);
+                prog->sendUniform("u_MatShininess", mat->shininess);
+            }
 
-        // send the Blinn-Phong parameters, if required
-        if (mLightingModel > PER_VERTEX_DIR_LIGHT) {
-            prog->sendUniform("u_MatEmissiveColor", mat->emissive);
-            prog->sendUniform("u_MatSpecularColor", mat->specular);
-            prog->sendUniform("u_MatShininess", mat->shininess);
+            // compute modelview matrix
+            glm::mat4 modelview = viewMatrix * ent->getWorldMatrix();
+
+            // send the entity's modelview and normal matrix
+            prog->sendUniform("u_ModelviewMatrix", modelview);
+            prog->sendUniform("u_NormalMatrix", glm::transpose(glm::inverse(glm::mat3(modelview))));
+
+            // use the entity's mesh
+            const Mesh* mesh = ent->getMesh();
+            mesh->activate();
+            mesh->draw();
         }
 
-        // compute modelview matrix
-        glm::mat4 modelview = viewMatrix * ent->getWorldMatrix();
+        //
+        // draw local axes for current entity
+        //
 
-        // send the entity's modelview and normal matrix
-        prog->sendUniform("u_ModelviewMatrix", modelview);
-        prog->sendUniform("u_NormalMatrix", glm::transpose(glm::inverse(glm::mat3(modelview))));
+        mDbgProgram->activate();
+        mDbgProgram->sendUniform("u_ProjectionMatrix", mProjMatrix);
 
-        // use the entity's mesh
-        const Mesh* mesh = ent->getMesh();
-        mesh->activate();
-        mesh->draw();
+        Entity* activeEntity = mEntities[mActiveEntityIndex];
+        mDbgProgram->sendUniform("u_ModelviewMatrix", viewMatrix * activeEntity->getWorldMatrix());
+        mAxes->activate();
+        mAxes->draw();
+
+        CHECK_GL_ERRORS("drawing");
     }
-
-    //
-    // draw local axes for current entity
-    //
-
-    mDbgProgram->activate();
-    mDbgProgram->sendUniform("u_ProjectionMatrix", mProjMatrix);
-
-    Entity* activeEntity = mEntities[mActiveEntityIndex];
-    mDbgProgram->sendUniform("u_ModelviewMatrix", viewMatrix * activeEntity->getWorldMatrix());
-    mAxes->activate();
-    mAxes->draw();
-
-    CHECK_GL_ERRORS("drawing");
 }
 
 static float t;
@@ -450,68 +327,76 @@ bool BasicSceneRenderer::update(float dt)
     if (kb->keyPressed(KC_ESCAPE))
         return false;
 
-    // get the entity to manipulate
-    Entity* activeEntity = mEntities[mActiveEntityIndex];
+    if (game_state == 0) {
+        if (kb->keyPressed(KC_RETURN))
+            game_state = 1;
+
+        // update the camera
+        mCamera->update(dt);
+    }
+    else {
+
+        // get the entity to manipulate
+        Entity* activeEntity = mEntities[mActiveEntityIndex];
+
+        float speed = 15;
+        float disp = speed * dt;
+
+        if (move_direction == 1)
+            activeEntity->translate(0, 0, disp);
+        else
+            activeEntity->translate(0, 0, -disp);
+
+        if (ceil(activeEntity->getPosition().z) == 25.00 || ceil(activeEntity->getPosition().z) == -25.00)
+            move_direction = move_direction * -1;
 
 
+        // move entity along entity's local axes
+        if (kb->isKeyDown(KC_T))
+            activeEntity->translateLocal(0, 0, disp);
+        if (kb->isKeyDown(KC_G))
+            activeEntity->translateLocal(0, 0, -disp);
+        if (kb->isKeyDown(KC_F))
+            activeEntity->translateLocal(disp, 0, 0);
+        if (kb->isKeyDown(KC_H))
+            activeEntity->translateLocal(-disp, 0, 0);
 
-    float speed = 15;
-    float disp = speed * dt;
+        // change lighting models
+        if (kb->keyPressed(KC_1))
+            mLightingModel = PER_VERTEX_DIR_LIGHT;
+        if (kb->keyPressed(KC_2))
+            mLightingModel = BLINN_PHONG_PER_FRAGMENT_DIR_LIGHT;
+        if (kb->keyPressed(KC_3))
+            mLightingModel = BLINN_PHONG_PER_FRAGMENT_POINT_LIGHT;
+        if (kb->keyPressed(KC_4))
+            mLightingModel = BLINN_PHONG_PER_FRAGMENT_MULTI_LIGHT;
 
-    if (move_direction == 1)
-        activeEntity->translate(0, 0, disp);
-    else
-        activeEntity->translate(0, 0, -disp);
+        // toggle visualization of point lights
+        if (kb->keyPressed(KC_TAB))
+            mVisualizePointLights = !mVisualizePointLights;
 
-    if (ceil(activeEntity->getPosition().z) == 25.00 || ceil(activeEntity->getPosition().z) == -25.00)
-        move_direction = move_direction * -1;
+        //
+        // start spline
+        //
+        static bool bSplineStart = false;
+        if (kb->keyPressed(KC_S))
+        {
+            SplineInit();
+            bSplineStart = true;
+        }
+        if (bSplineStart)
+        {
+            glm::vec3 vPos = SplinePointOnCurve(dt, mEntities[0]->getPosition(),
+                mEntities[1]->getPosition(),
+                mEntities[2]->getPosition(),
+                mEntities[3]->getPosition());
 
+            mEntities[4]->setPosition(vPos);
+        }
 
-    // move entity along entity's local axes
-    if (kb->isKeyDown(KC_T))
-        activeEntity->translateLocal(0, 0, disp);
-    if (kb->isKeyDown(KC_G))
-        activeEntity->translateLocal(0, 0, -disp);
-    if (kb->isKeyDown(KC_F))
-        activeEntity->translateLocal(disp, 0, 0);
-    if (kb->isKeyDown(KC_H))
-        activeEntity->translateLocal(-disp, 0, 0);
-
-    // change lighting models
-    if (kb->keyPressed(KC_1))
-        mLightingModel = PER_VERTEX_DIR_LIGHT;
-    if (kb->keyPressed(KC_2))
-        mLightingModel = BLINN_PHONG_PER_FRAGMENT_DIR_LIGHT;
-    if (kb->keyPressed(KC_3))
-        mLightingModel = BLINN_PHONG_PER_FRAGMENT_POINT_LIGHT;
-    if (kb->keyPressed(KC_4))
-        mLightingModel = BLINN_PHONG_PER_FRAGMENT_MULTI_LIGHT;
-
-    // toggle visualization of point lights
-    if (kb->keyPressed(KC_TAB))
-        mVisualizePointLights = !mVisualizePointLights;
-
-	//
-	// start spline
-	//
-	static bool bSplineStart = false;
-	if (kb->keyPressed(KC_S))
-	{
-		SplineInit();
-		bSplineStart = true;
-	}
-	if (bSplineStart)
-	{
-		glm::vec3 vPos = SplinePointOnCurve(dt, mEntities[0]->getPosition(),
-			mEntities[1]->getPosition(),
-			mEntities[2]->getPosition(),
-			mEntities[3]->getPosition());
-
-		mEntities[4]->setPosition(vPos);
-	}
-
-    // update the camera
-    mCamera->update(dt);
+        // update the camera
+        mCamera->update(dt);
+    }
 
     return true;
 }
