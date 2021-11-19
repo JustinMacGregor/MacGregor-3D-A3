@@ -14,8 +14,7 @@ BasicSceneRenderer::BasicSceneRenderer()
     , mActiveEntityIndex(0)
     , mDbgProgram(NULL)
     , mAxes(NULL)
-    , mVisualizePointLights(true)
-{
+    , mVisualizePointLights(true) {
 }
 
 void BasicSceneRenderer::initialize()
@@ -337,29 +336,22 @@ bool BasicSceneRenderer::update(float dt)
     else {
 
         // get the entity to manipulate
-        Entity* activeEntity = mEntities[mActiveEntityIndex];
+        //Entity* activeEntity = mEntities[mActiveEntityIndex];
 
         float speed = 15;
         float disp = speed * dt;
 
-        if (move_direction == 1)
-            activeEntity->translate(0, 0, disp);
-        else
-            activeEntity->translate(0, 0, -disp);
+        for (unsigned int a = 0; a < sizeof(mEntities); a = a + 1)
+        {
+            if (move_direction == 1)
+                mEntities[a]->translate(0, 0, disp);
+            else
+                mEntities[a]->translate(0, 0, -disp);
 
-        if (ceil(activeEntity->getPosition().z) == 25.00 || ceil(activeEntity->getPosition().z) == -25.00)
-            move_direction = move_direction * -1;
-
-
-        // move entity along entity's local axes
-        if (kb->isKeyDown(KC_T))
-            activeEntity->translateLocal(0, 0, disp);
-        if (kb->isKeyDown(KC_G))
-            activeEntity->translateLocal(0, 0, -disp);
-        if (kb->isKeyDown(KC_F))
-            activeEntity->translateLocal(disp, 0, 0);
-        if (kb->isKeyDown(KC_H))
-            activeEntity->translateLocal(-disp, 0, 0);
+            if (ceil(mEntities[a]->getPosition().z) == 25.00 || floor((mEntities[a]->getPosition().z) == 25.00) || ceil(mEntities[a]->getPosition().z) == -25.00 || floor((mEntities[a]->getPosition().z) == 25.00)) {
+                move_direction = move_direction * -1;
+            }
+        }
 
         // change lighting models
         if (kb->keyPressed(KC_1))
